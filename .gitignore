@@ -69,6 +69,12 @@ targeted_jadx_more/
 ws_test/
 server/
 
+# ---------- 编译中间产物 ----------
+*.class
+tools/pt/out/
+tools/**/out/
+tools/**/*.jar
+
 # ---------- 日志与临时文件 ----------
 *.log
 *.tmp
