@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>SuperAoh AI</title>
+  <link rel="stylesheet" href="vendor/ai-chat-ui.css">
+  <style>
+    :root { color-scheme:dark; --acu-primary:#8fa9ff; --acu-primary-soft:rgba(143,169,255,.13); --acu-bg:#0b1019; --acu-surface:#111827; --acu-surface-2:#182235; --acu-text:#eef2ff; --acu-text-secondary:#9eabc4; --acu-border:rgba(170,190,230,.13); --acu-border-strong:rgba(170,190,230,.22); --acu-radius:15px; --acu-max-width:100%; }
+    * { box-sizing:border-box; } html,body,#app { width:100%;height:100%;margin:0;overflow:hidden;background:#0b1019;color:#eef2ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overscroll-behavior:none; }
+    .shell {height:100dvh;display:flex;flex-direction:column;background:linear-gradient(180deg,#111827 0%,#0b1019 100%);}
+    .top {height:52px;flex:0 0 52px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid rgba(180,200,235,.12);background:rgba(12,17,27,.96);}
+    .brand {font-weight:750;letter-spacing:.02em;font-size:14px;flex:1}.model {color:#9eabc4;font-size:11px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.iconbtn {border:1px solid rgba(180,200,235,.16);background:#182235;color:#dce5ff;border-radius:10px;padding:7px 10px;font-size:12px;min-height:34px}
+    .messages {flex:1;min-height:0;overflow:auto;padding:8px 12px 10px;overscroll-behavior:contain}.composer {flex:0 0 auto;padding:8px 10px max(env(safe-area-inset-bottom),10px);background:linear-gradient(180deg,rgba(11,16,25,.76),#0b1019 22%);border-top:1px solid rgba(180,200,235,.10)}
+    .acu-root {--acu-bg:#0b1019;--acu-surface:#111827;--acu-surface-2:#182235;--acu-text:#eef2ff;--acu-text-secondary:#9eabc4;--acu-border:rgba(170,190,230,.13);--acu-border-strong:rgba(170,190,230,.22);--acu-primary:#8fa9ff;--acu-primary-soft:rgba(143,169,255,.13);}
+    .acu-root .acu-message {max-width:100%!important}.acu-root .acu-chat-container {height:100%;}
+    .msg-list {display:flex;flex-direction:column;gap:14px}.message {max-width:100%;}.bubble {border-radius:16px;padding:12px 14px;line-height:1.62;font-size:14px;word-break:break-word}.user .bubble {background:#263956;color:#eef3ff;margin-left:12%;}.assistant .bubble {background:#121b2a;border:1px solid rgba(180,200,235,.11);margin-right:4%;}.note .bubble {background:rgba(255,180,80,.08);color:#f2c982;font-size:12px}.reason {margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#0b111c;color:#9eabc4;font-size:12px;max-height:130px;overflow:auto;white-space:pre-wrap}.tool {margin-top:9px;border:1px solid rgba(143,169,255,.2);background:#0c1421;border-radius:12px;padding:10px}.toolhead {display:flex;justify-content:space-between;font-size:12px;color:#cbd7ff;font-weight:650}.toolargs,.toolresult {margin-top:7px;color:#9eabc4;font:11px/1.5 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere}.toolresult {max-height:132px;overflow:auto;padding-top:7px;border-top:1px solid rgba(180,200,235,.1)}.status {font-size:10px;color:#71d6a0}.status.bad {color:#ff918d}.time {font-size:10px;color:#75819a;margin-top:6px;text-align:right}.typing {color:#91a8ff;padding:8px;font-size:12px}.empty {height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:22px;color:#9eabc4}.empty strong {font-size:22px;color:#e8edff;margin-bottom:9px}.quick {display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}.quick button {color:#cdd8f8;background:#151f30;border:1px solid rgba(180,200,235,.15);border-radius:12px;padding:9px 11px;font-size:12px}.attach-row {display:flex;gap:6px;overflow:auto;padding-bottom:5px}.attach {border-radius:10px;background:#192438;padding:6px 8px;color:#cdd8f8;font-size:11px;white-space:nowrap}.footer-note {text-align:center;color:#62708a;font-size:10px;padding-top:7px}
+    .acu-input {background:#111827!important}.acu-input textarea {font-size:14px!important}.acu-root a {color:#a9bcff}
+    .errorbar {padding:7px 11px;color:#ffc1b8;background:rgba(180,35,24,.14);font-size:12px;border-radius:9px;margin-bottom:6px;display:none}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="vendor/vue.global.prod.js"></script>
+  <script src="vendor/ai-chat-ui.umd.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

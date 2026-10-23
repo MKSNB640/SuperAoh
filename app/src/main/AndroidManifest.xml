@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.superaoh">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--
+        存储权限（为了让 Ubuntu 沙箱里的 /sdcard 指向真实的共享存储）。
+
+        Android 11 (API 30) 起分区存储强制生效，READ/WRITE_EXTERNAL_STORAGE
+        对「非媒体文件」已经完全无效，proot 对 /storage/emulated/0 做 realpath
+        时会直接被 FUSE 拒绝（can't sanitize binding），表现为 /sdcard 变成空目录。
+        要真正访问共享存储，唯一途径是 MANAGE_EXTERNAL_STORAGE（所有文件访问），
+        它必须由用户在系统设置里手动授予，无法弹窗申请。
+
+        没授权时沙箱不会崩，只是把 /sdcard 降级到 App 专属外部目录
+        （/sdcard/Android/data/com.superaoh/files），保证 AI 仍能读写工作区。
+    -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
+<!-- Shizuku：必须声明这个权限，shizuku_server 才认我们的调用。
+         注意它不是普通运行时权限，用户不需要手动授予，由 Shizuku 侧校验。 -->
+    <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+
+    <application
+        android:allowBackup="false"
+        android:debuggable="true"
+        android:label="SuperAoh"
+        android:supportsRtl="true"
+        android:largeHeap="true"
+        android:hardwareAccelerated="true"
+        android:extractNativeLibs="true"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <!--
+            Shizuku 接入。
+
+            Shizuku 的服务端（uid=2000 shell）启动后，会反向查询所有声明了
+            moe.shizuku.client.V3_SUPPORT 的应用，把 binder 通过这个
+            ContentProvider 塞进来。没有它，Shizuku.pingBinder() 永远是 false，
+            我们就拿不到 shell 身份，沙箱也就跑不起来（原因见 ShizukuShell）。
+        -->
+        <meta-data
+            android:name="moe.shizuku.client.V3_SUPPORT"
+            android:value="true" />
+        <provider
+            android:name="com.superaoh.core.sandbox.ShizukuBridgeProvider"
+            android:authorities="${applicationId}.shizuku"
+            android:enabled="true"
+            android:exported="true"
+            android:multiprocess="false" />
+
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="SuperAoh">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.GameContainerActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
+            android:screenOrientation="sensorLandscape"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".ui.EditorActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
+            android:screenOrientation="sensorLandscape"
+            android:label="文明时代编辑器" />
+
+        <activity
+            android:name=".ui.compose.ChatComposeActivity"
+            android:exported="true"
+            android:label="AI 对话（zen-ai-chat-ui）"
+            android:theme="@android:style/Theme.Material.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.compose.ToolsActivity"
+            android:exported="false"
+            android:label="工具与扩展"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+        <!-- 独立数据编辑器：只读写工作区 overlay，不启动游戏本体 -->
+        <activity
+            android:name=".ui.compose.DataEditorActivity"
+            android:exported="false"
+            android:label="数据编辑器"
+            android:theme="@android:style/Theme.Material.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.AiChatActivity"
+            android:exported="false"
+            android:label="AI 助手"
+android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.AiSettingsActivity"
+            android:exported="false"
+            android:label="AI 设置"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+</manifest>

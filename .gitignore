@@ -1,0 +1,84 @@
+# ---------------------------------------------------------------
+# SuperAoh .gitignore
+#
+# 原则：只提交「能重建出 APK 所需的源码与小体积资源」。
+# 构建产物、反编译中间件、沙箱运行体、签名密钥一律不进仓库。
+# ---------------------------------------------------------------
+
+# ---------- Gradle / Kotlin / 构建产物 ----------
+.gradle/
+.kotlin/
+build/
+app/build/
+app/release/
+app/debug/
+*.iml
+*.hprof
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ---------- 签名密钥（绝对不能提交）----------
+build-keys/
+*.keystore
+*.jks
+*.pk8
+*.x509.pem
+
+# ---------- 凭据 / 环境 ----------
+.env
+.env.*
+*.secret
+token.txt
+gh.log
+
+# ---------- 沙箱运行时（体积过大，按需本地生成）----------
+# rootfs-plain.tar 约 289MB，ubuntu-*-pd-*.tar.xz 约 62MB
+sandbox/assets/*.tar
+sandbox/assets/*.tar.xz
+sandbox/assets/*.gz
+sandbox/rootfs/
+sandbox/tmp/
+
+# ---------- 内置逆向工具链（体积过大，需单独获取）----------
+# jadx 122MB / apktool 24MB / smali 5.2MB / baksmali 4.3MB
+# 说明见 README「构建前置资源」一节
+app/src/main/assets/toolchain/
+
+# ---------- 反编译 / 逆向工作区 ----------
+移植功能区/
+移植功能区/**/
+jadx_full_output/
+sr_out/
+sr_out2/
+targeted_jadx/
+targeted_jadx_more/
+*.dex
+*.apk
+*.jar.tmp
+
+# ---------- 源码压缩包与备份 ----------
+源码.zip
+*.zip
+*.7z
+*.rar
+!.gitkeep
+.backup/
+.probe/
+ws_test/
+server/
+
+# ---------- 日志与临时文件 ----------
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ---------- 本地工作区数据（可能含用户私人数据）----------
+workspace/
+workspaces/
+data/
