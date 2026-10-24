@@ -217,6 +217,7 @@ com.superaoh
 | `ui/compose/GovernmentDataRepository.kt` | 政体数据读写（宽松 JSON） |
 | `ui/compose/GameDataAccess.kt` | 跨 ClassLoader 反射、序列化/反序列化、原子写入 |
 | `ui/compose/GameJson.kt` | libGDX 宽松 JSON 解析器 |
+| `ui/compose/EditorRules.kt` | 与平台无关的写值 / 滑块对齐规则，仓库与测试共用 |
 
 ### 关于 `GameDataAccess` 的跨 ClassLoader 反射
 
@@ -367,23 +368,35 @@ am start -n com.superaoh/.ui.compose.DataEditorActivity
 
 ## 测试脚本
 
-`tools/` 下提供纯 JVM 测试（不需要 Android 设备）：
+`tools/` 下提供纯 JVM 测试（不需要 Android 设备），需要 JDK 8+ 与 Kotlin 编译器
+（脚本会自动探测 `kotlinc` 位置，也可用 `KOTLINC_BIN=/path/to/kotlinc` 指定）：
 
 ```bash
-# 政体宽松 JSON 解析测试
+# 政体宽松 JSON 解析测试（默认读取 tools/fixtures/Governments.json）
 bash tools/test_gamejson.sh
-# 输出：16 个政体、28 字段、往返一致、类型保留正确
 
-# 文明数据链路测试（依赖真实游戏 APK）
+# 政体端到端：加载 → 改值 → 多轮保存 → 双解析器复读
+bash tools/test_government_roundtrip.sh
+
+# 文明数据链路：用合成 APK 验证索引、名称包、保存与追加幂等
+bash tools/test_civilization_data.sh
+
+# 文明链路对真实游戏 APK 的验证
 bash tools/test_civilizations.sh '/path/to/game.apk'
 ```
 
 已有验证结论：
 
-- ✅ 政体：16 条记录 / 每条 28 字段，解析→写出→再解析结构完全一致，
+- ✅ 政体：`tools/fixtures/Governments.json` 的 28 字段结构解析→写出→再解析完全一致，
   `ACCEPTABLE_TAXATION` 正确解析为 `0.4`（不是 40），`2.0f`、布尔、字符串均正常；
 - ✅ 类型保留：整数键仍是 `Int`，比例键仍是 `Double`，`-1` 特殊值可保留；
-- ✅ 文明：语言包名称解析、目标行替换、行数不变、其他条目不受影响。
+- ✅ 多轮保存：未编辑字段（含本版本没有的未知字段、嵌套对象）在多轮保存后一个不丢，输出幂等；
+- ✅ 滑块对齐：`0.1 + 0.2` 这类浮点噪声被消除，写回为 `0.3`；
+- ✅ 文明：索引定位与首分号风格保持、悬空 tag 跳过、语言包名称解析、
+  目标行替换（行数不变、其他条目不动）、新条目追加且重复保存不重复追加。
+
+编辑器的写值规则集中在 `ui/compose/EditorRules.kt`，仓库与测试共用同一实现，
+避免两处逻辑悄悄分叉。
 
 ---
 

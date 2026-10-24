@@ -11,12 +11,33 @@ set -u
 PROJ="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$PROJ/app/src/main/java/com/superaoh/ui/compose/GameJson.kt"
 JSON_SRC="$PROJ/app/src/main/java/com/superaoh/core/Json.java"
-GOV="${1:-/sdcard/Claude的逆向学习/jadx_full_output/resources/assets/game/Governments.json}"
+# 默认优先用设备上的真实游戏数据，没有就退回仓库内的同格式样本
+DEV_GOV="/sdcard/Claude的逆向学习/jadx_full_output/resources/assets/game/Governments.json"
+FIXTURE_GOV="$PROJ/tools/fixtures/Governments.json"
+if [ -n "${1:-}" ]; then
+    GOV="$1"
+elif [ -f "$DEV_GOV" ]; then
+    GOV="$DEV_GOV"
+else
+    GOV="$FIXTURE_GOV"
+fi
 
-KOTLINC="/opt/kotlinc/kotlinc/bin/kotlinc"
-[ -x "$KOTLINC" ] || KOTLINC="/tmp/kotlinc/kotlinc/bin/kotlinc"
-KOTLIN_STDLIB="/opt/kotlinc/lib/kotlin-stdlib.jar"
-[ -f "$KOTLIN_STDLIB" ] || KOTLIN_STDLIB="/tmp/kotlinc/kotlinc/lib/kotlin-stdlib.jar"
+# kotlinc 位置因机器而异，逐个候选探测后取第一个可用的
+pick_kotlinc() {
+    for candidate in \
+        "${KOTLINC_BIN:-}" \
+        /opt/kotlinc/bin/kotlinc \
+        /opt/kotlinc/kotlinc/bin/kotlinc \
+        /tmp/kotlinc/kotlinc/bin/kotlinc; do
+        [ -n "$candidate" ] && [ -x "$candidate" ] && { echo "$candidate"; return; }
+    done
+}
+
+KOTLINC="$(pick_kotlinc)"
+[ -n "$KOTLINC" ] || { echo "找不到 kotlinc，可用 KOTLINC_BIN=/path/to/kotlinc 指定"; exit 1; }
+KOTLIN_HOME="$(cd "$(dirname "$KOTLINC")/.." && pwd)"
+KOTLIN_STDLIB="$KOTLIN_HOME/lib/kotlin-stdlib.jar"
+[ -f "$KOTLIN_STDLIB" ] || { echo "找不到 kotlin-stdlib.jar（$KOTLIN_STDLIB）"; exit 1; }
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT

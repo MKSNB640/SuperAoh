@@ -14,10 +14,22 @@ set -u
 PROJ="$(cd "$(dirname "$0")/.." && pwd)"
 APK="${1:-/sdcard/Download/batchops/final_v66.apk}"
 
-KOTLINC="/opt/kotlinc/kotlinc/bin/kotlinc"
-[ -x "$KOTLINC" ] || KOTLINC="/tmp/kotlinc/kotlinc/bin/kotlinc"
-STDLIB="/opt/kotlinc/lib/kotlin-stdlib.jar"
-[ -f "$STDLIB" ] || STDLIB="/tmp/kotlinc/kotlinc/lib/kotlin-stdlib.jar"
+# kotlinc 位置因机器而异，逐个候选探测后取第一个可用的
+pick_kotlinc() {
+    for candidate in \
+        "${KOTLINC_BIN:-}" \
+        /opt/kotlinc/bin/kotlinc \
+        /opt/kotlinc/kotlinc/bin/kotlinc \
+        /tmp/kotlinc/kotlinc/bin/kotlinc; do
+        [ -n "$candidate" ] && [ -x "$candidate" ] && { echo "$candidate"; return; }
+    done
+}
+
+KOTLINC="$(pick_kotlinc)"
+[ -n "$KOTLINC" ] || { echo "找不到 kotlinc，可用 KOTLINC_BIN=/path/to/kotlinc 指定"; exit 1; }
+KOTLIN_HOME="$(cd "$(dirname "$KOTLINC")/.." && pwd)"
+STDLIB="$KOTLIN_HOME/lib/kotlin-stdlib.jar"
+[ -f "$STDLIB" ] || { echo "找不到 kotlin-stdlib.jar（$STDLIB）"; exit 1; }
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT

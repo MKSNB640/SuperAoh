@@ -144,6 +144,9 @@ private fun DataEditorScreen(workspace: Workspace, onBack: () -> Unit) {
                 }
                 Page.GOVERNMENTS, Page.GOVERNMENT_EDIT -> "保存" to {
                     val doc = govDocument ?: return@to
+                    // 以列表为准重建结果：被删除的政体不能因为还挂在 editingGov 上而被写回。
+                    doc.records.clear()
+                    doc.records.addAll(govRecords)
                     run { govRepo.save(doc); "政体已保存，下次启动游戏生效" }
                 }
                 else -> null
@@ -231,7 +234,15 @@ private fun DataEditorScreen(workspace: Workspace, onBack: () -> Unit) {
                         name = govRepo.name(record, govRecords.indexOf(record)),
                         detail = "${record.size} 个字段",
                         onClick = { editingGov = record; page = Page.GOVERNMENT_EDIT },
-                        onDelete = { govRecords.remove(record) },
+                        onDelete = {
+                            // 先退出编辑再移除，否则 editingGov 仍指向被删对象，
+                            // 点「保存」会把它连同删除结果一起写回去。
+                            if (editingGov === record) {
+                                editingGov = null
+                                if (page == Page.GOVERNMENT_EDIT) page = Page.GOVERNMENTS
+                            }
+                            govRecords.remove(record)
+                        },
                     )
                 }
             }
@@ -613,7 +624,7 @@ private fun TextInputRow(label: String, value: String, onChange: (String) -> Uni
 
 @Composable
 private fun NumberRow(field: GovernmentDataRepository.Field, value: Double, onChange: (Double) -> Unit) {
-    val decimals = if (field.step >= 1.0) 0 else if (field.step >= 0.1) 1 else 2
+    val decimals = EditorRules.decimals(field.step)
     val display = if (field.percent) {
         String.format("%.${decimals}f%%", value * 100.0)
     } else {
@@ -626,11 +637,7 @@ private fun NumberRow(field: GovernmentDataRepository.Field, value: Double, onCh
         }
         Slider(
             value = value.toFloat().coerceIn(field.min.toFloat(), field.max.toFloat()),
-            onValueChange = { raw ->
-                // 对齐到 step 网格，并消除浮点误差（0.1 累加会变成 0.30000000000000004）
-                val snapped = Math.round(raw / field.step) * field.step
-                onChange(Math.round(snapped * 1e6) / 1e6)
-            },
+            onValueChange = { raw -> onChange(EditorRules.snap(raw.toDouble(), field.step)) },
             valueRange = field.min.toFloat()..field.max.toFloat(),
         )
     }

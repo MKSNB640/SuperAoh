@@ -229,6 +229,28 @@ while (c != null) {
 `assets.srcDirs("src/main/assets", "../sandbox/assets")` 的第二项，
 大幅减小 APK 体积，加快构建。
 
+### 6.1 在没有设备的环境里验证数据层
+
+数据层不依赖 Android 运行时，可以在普通 Linux（含本仓库的 CI 沙盒）上完整验证：
+
+```bash
+# 需要 JDK 17（或 8+）与 Kotlin 2.0.21 编译器；脚本会自行探测 kotlinc
+bash tools/test_gamejson.sh
+bash tools/test_government_roundtrip.sh
+bash tools/test_civilization_data.sh
+```
+
+第三条用 `tools/build_civilization_fixture.py` 现场生成一个只含目录结构的
+合成 APK，因此不需要真实游戏包。
+
+这类环境**不能**替代真机验证：`GameDataAccess` 的反射、`DexClassLoader`
+加载游戏类、overlay 对 `GameFilesProxy` 的实际生效，都必须在设备上确认。
+本地能保证的是「文件格式、写值类型、多轮保存不丢字段」这些最容易悄悄坏掉的部分。
+
+Compose 的 `@Composable` 插桩同样只能在 Gradle 里完成，裸 `kotlinc`
+即使带上 Compose 编译器插件也会因版本/插件加载方式报插件不兼容，
+不要在这上面浪费时间；只编译非 UI 文件即可发现类型错误。
+
 ---
 
 ## 7. Git 注意事项

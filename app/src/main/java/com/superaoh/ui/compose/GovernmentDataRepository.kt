@@ -98,22 +98,10 @@ internal class GovernmentDataRepository(
     // ---------------- 写值 ----------------
 
     /**
-     * 写数值，并保留原字段的数值类型。
-     *
-     * 游戏侧用 `getInt` / `getFloat` 之类的强类型读取，把原本的 `7` 写成 `7.0`
-     * 通常没事，但把 `2.0f` 写成字符串或把整数写成 `true` 就会崩。
-     * 因此按原值类型回写：整数键保持整数，比例键保持小数。
+     * 写数值，并保留原字段的数值类型。规则见 [EditorRules.number]。
      */
     fun setNumber(record: MutableMap<String, Any?>, key: String, value: Double) {
-        val old = record[key]
-        record[key] = when (old) {
-            is Int -> value.toInt()
-            is Long -> value.toLong()
-            is Float -> value.toFloat()
-            is Boolean -> value != 0.0
-            // 原值不存在或不是数字：按是否为整数自动选 Int / Double
-            else -> if (value == Math.floor(value) && !value.isInfinite()) value.toInt() else value
-        }
+        EditorRules.number(record, key, value)
     }
 
     fun setText(record: MutableMap<String, Any?>, key: String, value: String) {
