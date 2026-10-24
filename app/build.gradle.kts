@@ -43,7 +43,17 @@ android {
             res.srcDirs("src/main/res")
             jniLibs.srcDirs("src/main/jniLibs")
             // 沙箱资产：Ubuntu rootfs（64MB xz）+ proot 二进制
-            // 来源是 Operit 的 assets，已提取到项目 sandbox/ 目录
+            // 来源是 Operit 的 assets，已提取到项目 sandbox/ 目录。
+            //
+            // 注意：sandbox/assets 里还有一个 rootfs-plain.tar（289MB），
+            // 那是 UbuntuSandbox.xzToTar() 在**运行时**由 xz 解出来的中间产物。
+            // 它绝不能打进 APK：
+            //   1. 代码只读 assets/ubuntu-noble-*.tar.xz 这一个文件
+            //      （见 UbuntuSandbox.ROOTFS_ASSET），从不读 rootfs-plain.tar；
+            //   2. 打进去会让 APK 白涨 302MB（实测 511MB -> 209MB）；
+            //   3. 它的落点是 getExternalFilesDir()，属于运行期缓存，
+            //      设备上本来就会自己生成。
+            // 所以下面用 ignoreAssetsPattern 把它挡在打包之外。
             assets.srcDirs("src/main/assets", "../sandbox/assets")
         }
     }
@@ -52,6 +62,9 @@ android {
     // （否则解压前还要先去 aapt 那层，白占内存）
     androidResources {
         noCompress += listOf("xz", "tar")
+        // rootfs-plain.tar 是运行时生成的中间产物，不打进 APK（省 302MB）。
+        // 语法是 aapt 的 ignoreAssets 模式：冒号分隔的文件名 glob。
+        ignoreAssetsPattern = "rootfs-plain.tar"
     }
 
     buildFeatures {

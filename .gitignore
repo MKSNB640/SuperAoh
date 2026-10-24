@@ -19,12 +19,17 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# ---------- 签名密钥（绝对不能提交）----------
-build-keys/
-*.keystore
-*.jks
-*.pk8
-*.x509.pem
+# ---------- 签名密钥 ----------
+# 本项目用的是 AOSP 公开测试密钥（Google 源码树自带，专供调试签名，
+# 全世界的 Android 项目都在用同一份），因此可以安全提交，方便服务器直接构建。
+# 若改为发布正式版，请替换成自己的密钥并从这里移除。
+# build-keys/ 已在下面显式取消忽略。
+#
+# 真实生产密钥的忽略规则（改成自己的密钥后恢复启用）：
+# *.jks
+# *.keystore.prod
+# *.pk8.prod
+# *.x509.pem.prod
 
 # ---------- 凭据 / 环境 ----------
 .env
@@ -34,17 +39,23 @@ token.txt
 gh.log
 
 # ---------- 沙箱运行时（体积过大，按需本地生成）----------
-# rootfs-plain.tar 约 289MB，ubuntu-*-pd-*.tar.xz 约 62MB
+# rootfs-plain.tar 是运行时由 xz 解出的中间产物，不提交也不打包。
+# ubuntu-noble-*.tar.xz（62MB）是真正的 assets 依赖，必须提交（<100MB 可直传）。
 sandbox/assets/*.tar
 sandbox/assets/*.tar.xz
 sandbox/assets/*.gz
 sandbox/rootfs/
 sandbox/tmp/
 
-# ---------- 内置逆向工具链（体积过大，需单独获取）----------
-# jadx 122MB / apktool 24MB / smali 5.2MB / baksmali 4.3MB
-# 说明见 README「构建前置资源」一节
-app/src/main/assets/toolchain/
+# 反向例外：rootfs xz 是构建必需资源，强制纳入版本控制
+!sandbox/assets/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz
+
+# ---------- 内置逆向工具链 ----------
+# 说明见 README「构建前置资源」一节。
+# jadx.jar 122MB 超过 GitHub 单文件 100MB 限制，因此拆成 3 块放在
+# assets-binary/ 下（见该目录的 README）。其余 jar 都 < 25MB，直接提交。
+# app/src/main/assets/toolchain/ 整体不忽略，只忽略原始的超大 jadx.jar。
+app/src/main/assets/toolchain/jadx/jadx.jar
 
 # ---------- 反编译 / 逆向工作区 ----------
 移植功能区/
